@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Calendar, MapPin, Heart } from 'lucide-react';
+import { Calendar, MapPin, Heart, Navigation } from 'lucide-react';
 import type { Event } from '../../lib/hooks';
 import { formatPrice } from '../../lib/hooks';
+import { useLocation as useGeo } from '../../lib/location';
 
 interface EventCardProps {
   event: Event;
@@ -22,6 +23,8 @@ const statusMap: Record<string, { label: string; cls: string }> = {
 export default function EventCard({ event, linkPrefix = '/evento', showStatus = false }: EventCardProps) {
   const href = linkPrefix === '/evento' ? `/evento/${event.slug}` : `${linkPrefix}/${event.id}`;
   const status = statusMap[event.status];
+  const { distanceTo } = useGeo();
+  const distance = event.lat && event.lng ? distanceTo(event.lat, event.lng) : null;
 
   return (
     <Link
@@ -53,6 +56,9 @@ export default function EventCard({ event, linkPrefix = '/evento', showStatus = 
         <div className="flex items-center gap-3 text-xs text-stone-400 mb-2">
           <span className="flex items-center gap-1"><Calendar size={12} /> {event.dateStart}</span>
           <span className="flex items-center gap-1"><MapPin size={12} /> {event.city}</span>
+          {distance !== null && (
+            <span className="flex items-center gap-1 text-primary/70"><Navigation size={12} /> {distance} km</span>
+          )}
         </div>
         <h3 className="font-semibold text-stone-900 mb-1 leading-snug">{event.title}</h3>
         <p className="text-sm text-stone-500 line-clamp-2 mb-4">{event.shortDescription}</p>

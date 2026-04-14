@@ -4,8 +4,10 @@ import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import type { Database } from '../lib/types';
 import AnimatedSection from '../components/ui/AnimatedSection';
+import { usePageTitle } from '../lib/usePageTitle';
 
 export default function ContactPage() {
+  usePageTitle('Contacto');
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [formError, setFormError] = useState('');

@@ -1,3 +1,4 @@
+import { usePageTitle } from '../lib/usePageTitle';
 import Hero from '../components/sections/Hero';
 import StatsSection from '../components/sections/StatsSection';
 import FeaturedEvents from '../components/sections/FeaturedEvents';
@@ -13,6 +14,7 @@ import NewsletterSignup from '../components/sections/NewsletterSignup';
 import AdvertiserCTA from '../components/sections/AdvertiserCTA';
 
 export default function HomePage() {
+  usePageTitle();
   return (
     <>
       <Hero />

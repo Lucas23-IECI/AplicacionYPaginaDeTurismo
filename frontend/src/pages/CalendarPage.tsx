@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, MapPin, Clock, Download } from 'lucide-react
 import { useEvents, formatPrice, type Event } from '../lib/hooks';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import Breadcrumb from '../components/shared/Breadcrumb';
+import { usePageTitle } from '../lib/usePageTitle';
 
 const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
@@ -40,6 +41,7 @@ function downloadICS(events: Event[], filename: string) {
 }
 
 export default function CalendarPage() {
+  usePageTitle('Calendario');
   const [currentMonth, setCurrentMonth] = useState(3); // Abril
   const [currentYear] = useState(2026);
   const { data: events } = useEvents();

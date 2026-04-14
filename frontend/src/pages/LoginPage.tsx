@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../lib/auth';
+import { usePageTitle } from '../lib/usePageTitle';
 
 export default function LoginPage() {
+  usePageTitle('Iniciar Sesión');
   const [showPassword, setShowPassword] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');

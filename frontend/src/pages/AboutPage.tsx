@@ -1,6 +1,7 @@
 import { Heart, Eye, Target, Users } from 'lucide-react';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import StaggerContainer, { StaggerItem } from '../components/ui/StaggerContainer';
+import { usePageTitle } from '../lib/usePageTitle';
 
 const values = [
   { icon: Eye, title: 'Curación', desc: 'Seleccionamos y presentamos solo experiencias que cumplen un estándar editorial.' },
@@ -10,6 +11,7 @@ const values = [
 ];
 
 export default function AboutPage() {
+  usePageTitle('Sobre Nosotros');
   return (
     <div className="pt-24 pb-16">
       <div className="max-w-7xl mx-auto px-6">

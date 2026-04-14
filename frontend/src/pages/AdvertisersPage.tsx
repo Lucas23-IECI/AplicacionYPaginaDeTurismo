@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Check, ArrowRight, Star, Users, BarChart3, Shield } from 'lucide-react';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import StaggerContainer, { StaggerItem } from '../components/ui/StaggerContainer';
+import { usePageTitle } from '../lib/usePageTitle';
 
 const plans = [
   { name: 'Básico', price: '29.990', period: '/mes', features: ['3 eventos activos', 'Ficha estándar', 'Soporte por email', 'Estadísticas básicas'], popular: false },
@@ -17,6 +18,7 @@ const benefits = [
 ];
 
 export default function AdvertisersPage() {
+  usePageTitle('Anunciantes');
   return (
     <div className="pt-24 pb-16">
       <div className="max-w-7xl mx-auto px-6">

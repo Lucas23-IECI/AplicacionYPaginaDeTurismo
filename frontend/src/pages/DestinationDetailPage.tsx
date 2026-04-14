@@ -5,11 +5,13 @@ import { useDestinationBySlug, useEvents } from '../lib/hooks';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import EventCard from '../components/shared/EventCard';
 import Breadcrumb from '../components/shared/Breadcrumb';
+import { usePageTitle } from '../lib/usePageTitle';
 
 export default function DestinationDetailPage() {
   const { slug } = useParams();
   const { data: destination, loading } = useDestinationBySlug(slug);
   const { data: events } = useEvents();
+  usePageTitle(destination?.name ?? 'Destino');
 
   if (loading) {
     return (

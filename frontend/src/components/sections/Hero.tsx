@@ -1,15 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Search, Calendar, Tag } from 'lucide-react';
+import { MapPin, Search, Calendar, Tag, Locate } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useCategories } from '../../lib/hooks';
+import { useLocation as useGeo } from '../../lib/location';
 
 export default function Hero() {
   const navigate = useNavigate();
   const { data: categories } = useCategories();
+  const { city, loading: geoLoading, requestLocation } = useGeo();
   const [location, setLocation] = useState('');
   const [date, setDate] = useState('');
   const [category, setCategory] = useState('');
+
+  // Auto-fill city when geolocation resolves
+  useEffect(() => {
+    if (city && !location) setLocation(city);
+  }, [city]);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -83,6 +90,15 @@ export default function Hero() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                 />
+                <button
+                  type="button"
+                  onClick={requestLocation}
+                  disabled={geoLoading}
+                  className="text-stone-400 hover:text-primary transition-colors shrink-0"
+                  title="Usar mi ubicación actual"
+                >
+                  <Locate size={18} className={geoLoading ? 'animate-spin' : ''} />
+                </button>
               </div>
             </div>
             <div className="w-full md:w-32 space-y-1">

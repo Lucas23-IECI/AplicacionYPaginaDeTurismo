@@ -28,6 +28,7 @@ import PortalNewEvent from './pages/portal/PortalNewEvent';
 import PortalProfile from './pages/portal/PortalProfile';
 import PortalSubscription from './pages/portal/PortalSubscription';
 import PortalRegister from './pages/portal/PortalRegister';
+import NotFoundPage from './pages/NotFoundPage';
 
 export const router = createBrowserRouter([
   {
@@ -82,5 +83,10 @@ export const router = createBrowserRouter([
   {
     path: '/portal/registro',
     element: <ProtectedRoute><PortalRegister /></ProtectedRoute>,
+  },
+  {
+    path: '*',
+    element: <PublicLayout />,
+    children: [{ path: '*', element: <NotFoundPage /> }],
   },
 ]);

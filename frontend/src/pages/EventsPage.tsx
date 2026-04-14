@@ -8,6 +8,7 @@ import StaggerContainer, { StaggerItem } from '../components/ui/StaggerContainer
 import { SkeletonGrid } from '../components/ui/Skeleton';
 import EventCard from '../components/shared/EventCard';
 import Breadcrumb from '../components/shared/Breadcrumb';
+import { usePageTitle } from '../lib/usePageTitle';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -25,6 +26,7 @@ const defaultIcon = L.icon({
 const PAGE_SIZE = 12;
 
 export default function EventsPage() {
+  usePageTitle('Experiencias');
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('q') ?? '');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get('cat') ?? null);
@@ -150,7 +152,9 @@ export default function EventsPage() {
 
         <p className="text-sm text-stone-400 mb-6">{filtered.length} experiencias encontradas</p>
 
-        {viewMode === 'map' ? (
+        {loading ? (
+          <SkeletonGrid count={6} />
+        ) : viewMode === 'map' ? (
           <div className="rounded-2xl overflow-hidden border border-stone-200 h-[600px]">
             <MapContainer center={[-36.62, -72.42]} zoom={9} className="h-full w-full" scrollWheelZoom>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
@@ -167,8 +171,16 @@ export default function EventsPage() {
               ))}
             </MapContainer>
           </div>
-        ) : loading ? (
-          <SkeletonGrid count={6} />
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="text-5xl mb-4">🔍</div>
+            <h3 className="text-xl font-display text-stone-700 mb-2">No se encontraron experiencias</h3>
+            <p className="text-stone-500 mb-6">Intenta con otros filtros o una búsqueda diferente.</p>
+            <button onClick={() => { handleSearch(''); handleCategory(null); setSelectedDate(''); updateParams({ q: null, cat: null, fecha: null, page: null }); }}
+              className="px-5 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">
+              Limpiar filtros
+            </button>
+          </div>
         ) : (
           <>
             <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
