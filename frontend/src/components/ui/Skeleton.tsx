@@ -6,12 +6,12 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className = '' }: SkeletonProps) {
-  return <div className={`animate-pulse bg-stone-200 rounded-lg ${className}`} />;
+  return <div className={`animate-pulse bg-stone-200 dark:bg-zinc-800 rounded-lg ${className}`} />;
 }
 
 export function SkeletonCard() {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-stone-100">
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-stone-100 dark:border-zinc-800">
       <Skeleton className="h-52 rounded-none" />
       <div className="p-5 space-y-3">
         <div className="flex gap-3">
@@ -20,7 +20,7 @@ export function SkeletonCard() {
         </div>
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-4 w-1/2" />
-        <div className="flex justify-between pt-3 border-t border-stone-100">
+        <div className="flex justify-between pt-3 border-t border-stone-100 dark:border-zinc-800">
           <Skeleton className="h-5 w-20" />
           <Skeleton className="h-5 w-5 rounded-full" />
         </div>
@@ -64,7 +64,7 @@ export function SkeletonRow() {
 
 export function SkeletonTable({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="bg-white rounded-xl border border-stone-200 overflow-hidden divide-y divide-stone-50">
+    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-stone-200 dark:border-zinc-800 overflow-hidden divide-y divide-stone-50 dark:divide-zinc-800">
       {Array.from({ length: rows }).map((_, i) => (
         <SkeletonRow key={i} />
       ))}
@@ -74,7 +74,7 @@ export function SkeletonTable({ rows = 5 }: { rows?: number }) {
 
 export function SkeletonStat() {
   return (
-    <div className="animate-pulse bg-white rounded-xl border border-stone-200 p-5">
+    <div className="animate-pulse bg-white dark:bg-zinc-900 rounded-xl border border-stone-200 dark:border-zinc-800 p-5">
       <div className="flex items-center justify-between mb-3">
         <Skeleton className="h-3 w-24" />
         <Skeleton className="w-8 h-8 rounded-lg" />
