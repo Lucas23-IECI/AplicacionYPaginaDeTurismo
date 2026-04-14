@@ -1,18 +1,37 @@
-import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { Search, MapPin, Calendar, SlidersHorizontal, X } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Search, MapPin, SlidersHorizontal, X, Grid3X3, Map as MapIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useEvents, useCategories, formatPrice } from '../lib/hooks';
+import { useEvents, useCategories } from '../lib/hooks';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import StaggerContainer, { StaggerItem } from '../components/ui/StaggerContainer';
 import { SkeletonGrid } from '../components/ui/Skeleton';
+import EventCard from '../components/shared/EventCard';
+import Breadcrumb from '../components/shared/Breadcrumb';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { Link } from 'react-router-dom';
+import { formatPrice } from '../lib/hooks';
+
+// fix default marker icon
+const defaultIcon = L.icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
+});
+
+const PAGE_SIZE = 12;
 
 export default function EventsPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('q') ?? '');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get('cat') ?? null);
   const [selectedDate, setSelectedDate] = useState(searchParams.get('fecha') ?? '');
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
+  const [page, setPage] = useState(Number(searchParams.get('page') ?? '1'));
   const { data: events, loading } = useEvents();
   const { data: categories } = useCategories();
 
@@ -20,18 +39,37 @@ export default function EventsPage() {
     setSearch(searchParams.get('q') ?? '');
     setSelectedCategory(searchParams.get('cat') || null);
     setSelectedDate(searchParams.get('fecha') ?? '');
+    setPage(Number(searchParams.get('page') ?? '1'));
   }, [searchParams]);
 
-  const filtered = (events ?? []).filter((e) => {
+  // Persist filter changes to URL
+  const updateParams = (updates: Record<string, string | null>) => {
+    const next = new URLSearchParams(searchParams);
+    for (const [k, v] of Object.entries(updates)) {
+      if (v) next.set(k, v); else next.delete(k);
+    }
+    setSearchParams(next, { replace: true });
+  };
+
+  const handleSearch = (v: string) => { setSearch(v); updateParams({ q: v || null, page: null }); };
+  const handleCategory = (cat: string | null) => { setSelectedCategory(cat); updateParams({ cat, page: null }); };
+  const handlePage = (p: number) => { setPage(p); updateParams({ page: p > 1 ? String(p) : null }); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+
+  const filtered = useMemo(() => (events ?? []).filter((e) => {
     const matchesSearch = !search || e.title.toLowerCase().includes(search.toLowerCase()) || e.city.toLowerCase().includes(search.toLowerCase());
     const matchesCat = !selectedCategory || e.categorySlug === selectedCategory;
     const matchesDate = !selectedDate || e.dateStart === selectedDate || (e.dateEnd && e.dateStart <= selectedDate && e.dateEnd >= selectedDate);
     return matchesSearch && matchesCat && matchesDate;
-  });
+  }), [events, search, selectedCategory, selectedDate]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="pt-24 pb-16">
       <div className="max-w-7xl mx-auto px-6">
+        <Breadcrumb items={[{ label: 'Experiencias' }]} />
+
         <AnimatedSection variant="fadeUp">
           <h1 className="text-4xl md:text-5xl font-display text-stone-900 mb-4">Todas las Experiencias</h1>
           <p className="text-stone-500 text-lg mb-10 max-w-xl">
@@ -47,17 +85,26 @@ export default function EventsPage() {
               type="text"
               placeholder="Buscar por nombre o ciudad..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
               className="w-full pl-11 pr-4 py-3 rounded-xl border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:border-primary transition-colors"
-          >
-            <SlidersHorizontal size={16} />
-            Filtros
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:border-primary transition-colors"
+            >
+              <SlidersHorizontal size={16} />
+              Filtros
+            </button>
+            <button
+              onClick={() => setViewMode(viewMode === 'grid' ? 'map' : 'grid')}
+              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:border-primary transition-colors"
+              title={viewMode === 'grid' ? 'Ver mapa' : 'Ver grilla'}
+            >
+              {viewMode === 'grid' ? <MapIcon size={16} /> : <Grid3X3 size={16} />}
+            </button>
+          </div>
         </div>
 
         {/* Category pills */}
@@ -68,7 +115,7 @@ export default function EventsPage() {
             className="flex flex-wrap gap-2 mb-8"
           >
             <button
-              onClick={() => setSelectedCategory(null)}
+              onClick={() => handleCategory(null)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 !selectedCategory ? 'bg-primary text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
               }`}
@@ -78,9 +125,9 @@ export default function EventsPage() {
             {(categories ?? []).map((cat) => (
               <button
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.name)}
+                onClick={() => handleCategory(cat.slug)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedCategory === cat.name ? 'bg-primary text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  selectedCategory === cat.slug ? 'bg-primary text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                 }`}
               >
                 {cat.icon} {cat.name}
@@ -93,46 +140,65 @@ export default function EventsPage() {
           <div className="flex items-center gap-2 mb-6">
             <span className="text-sm text-stone-500">Filtrando por:</span>
             <button
-              onClick={() => setSelectedCategory(null)}
+              onClick={() => handleCategory(null)}
               className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium"
             >
-              {selectedCategory} <X size={14} />
+              {(categories ?? []).find(c => c.slug === selectedCategory)?.name ?? selectedCategory} <X size={14} />
             </button>
           </div>
         )}
 
         <p className="text-sm text-stone-400 mb-6">{filtered.length} experiencias encontradas</p>
 
-        {loading ? (
+        {viewMode === 'map' ? (
+          <div className="rounded-2xl overflow-hidden border border-stone-200 h-[600px]">
+            <MapContainer center={[-36.62, -72.42]} zoom={9} className="h-full w-full" scrollWheelZoom>
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
+              {filtered.filter(e => e.lat && e.lng).map(e => (
+                <Marker key={e.id} position={[e.lat, e.lng]} icon={defaultIcon}>
+                  <Popup>
+                    <div className="min-w-[180px]">
+                      <Link to={`/evento/${e.slug}`} className="font-semibold text-sm hover:text-primary">{e.title}</Link>
+                      <p className="text-xs text-stone-500 mt-1">{e.city} · {e.dateStart}</p>
+                      <p className="text-xs font-bold text-primary mt-1">{e.price === 0 ? 'Gratis' : formatPrice(e.price)}</p>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          </div>
+        ) : loading ? (
           <SkeletonGrid count={6} />
         ) : (
-        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((event) => (
-            <StaggerItem key={event.id}>
-              <Link to={`/evento/${event.slug}`} className="block bg-white rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-300 border border-stone-100">
-                <div className="relative h-52 overflow-hidden">
-                  <img src={event.images[0]} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                  <span className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur-sm text-[10px] font-bold tracking-wider uppercase rounded-full text-stone-700">
-                    {event.category}
-                  </span>
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-3 text-xs text-stone-400 mb-2">
-                    <span className="flex items-center gap-1"><Calendar size={12} /> {event.dateStart}</span>
-                    <span className="flex items-center gap-1"><MapPin size={12} /> {event.city}</span>
-                  </div>
-                  <h3 className="font-semibold text-stone-900 mb-1 leading-snug">{event.title}</h3>
-                  <p className="text-sm text-stone-500 line-clamp-2 mb-4">{event.shortDescription}</p>
-                  <div className="pt-3 border-t border-stone-100">
-                    <span className="text-primary font-bold text-sm">
-                      {event.price === 0 ? 'Gratis' : formatPrice(event.price)}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            </StaggerItem>
-          ))}
-        </StaggerContainer>
+          <>
+            <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {paginated.map((event) => (
+                <StaggerItem key={event.id}>
+                  <EventCard event={event} />
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-10">
+                <button onClick={() => handlePage(Math.max(1, page - 1))} disabled={page <= 1}
+                  className="p-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 disabled:opacity-30 transition-colors">
+                  <ChevronLeft size={18} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                  <button key={p} onClick={() => handlePage(p)}
+                    className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${p === page ? 'bg-primary text-white' : 'border border-stone-200 text-stone-600 hover:bg-stone-50'}`}>
+                    {p}
+                  </button>
+                ))}
+                <button onClick={() => handlePage(Math.min(totalPages, page + 1))} disabled={page >= totalPages}
+                  className="p-2 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 disabled:opacity-30 transition-colors">
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -1,8 +1,10 @@
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, Calendar, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useDestinationBySlug, useEvents, formatPrice } from '../lib/hooks';
+import { useDestinationBySlug, useEvents } from '../lib/hooks';
 import AnimatedSection from '../components/ui/AnimatedSection';
+import EventCard from '../components/shared/EventCard';
+import Breadcrumb from '../components/shared/Breadcrumb';
 
 export default function DestinationDetailPage() {
   const { slug } = useParams();
@@ -48,6 +50,7 @@ export default function DestinationDetailPage() {
       </motion.div>
 
       <div className="max-w-7xl mx-auto px-6 py-10">
+        <Breadcrumb items={[{ label: destination.name }]} />
         <AnimatedSection variant="fadeUp">
           <p className="text-lg text-stone-600 leading-relaxed mb-10 max-w-3xl">{destination.description}</p>
         </AnimatedSection>
@@ -56,19 +59,7 @@ export default function DestinationDetailPage() {
         {destEvents.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {destEvents.map((event) => (
-              <Link key={event.id} to={`/evento/${event.slug}`} className="block bg-white rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-300 border border-stone-100">
-                <div className="relative h-48 overflow-hidden">
-                  <img src={event.images[0]} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-3 text-xs text-stone-400 mb-2">
-                    <span className="flex items-center gap-1"><Calendar size={12} /> {event.dateStart}</span>
-                    <span className="flex items-center gap-1"><MapPin size={12} /> {event.city}</span>
-                  </div>
-                  <h3 className="font-semibold text-stone-900 leading-snug">{event.title}</h3>
-                  <p className="text-primary font-bold text-sm mt-2">{event.price === 0 ? 'Gratis' : formatPrice(event.price)}</p>
-                </div>
-              </Link>
+              <div key={event.id}><EventCard event={event} /></div>
             ))}
           </div>
         ) : (

@@ -452,3 +452,103 @@ export async function upsertTestimonial(t: { id?: string; name: string; city: st
     if (error) throw error;
   }
 }
+
+// ── PORTAL: Advertiser profile ──
+export interface AdvertiserProfile {
+  id: string;
+  userId: string;
+  businessName: string;
+  contactName: string;
+  phone: string | null;
+  email: string;
+  website: string | null;
+  logoUrl: string | null;
+  description: string | null;
+  subscriptionTier: 'basico' | 'profesional' | 'premium';
+  subscriptionStatus: 'active' | 'inactive' | 'cancelled';
+  createdAt: string;
+}
+
+function mapAdvertiser(r: Tables['advertisers']['Row']): AdvertiserProfile {
+  return {
+    id: r.id,
+    userId: r.user_id,
+    businessName: r.business_name,
+    contactName: r.contact_name,
+    phone: r.phone,
+    email: r.email,
+    website: r.website,
+    logoUrl: r.logo_url,
+    description: r.description,
+    subscriptionTier: r.subscription_tier,
+    subscriptionStatus: r.subscription_status,
+    createdAt: r.created_at,
+  };
+}
+
+export function useAdvertiserProfile(userId: string | undefined) {
+  return useSupabaseQuery<AdvertiserProfile | null>(async () => {
+    if (!userId) return null;
+    const { data, error } = await supabase
+      .from('advertisers')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? mapAdvertiser(data) : null;
+  }, [userId]);
+}
+
+export function useMyEvents(advertiserId: string | undefined) {
+  return useSupabaseQuery<Event[]>(async () => {
+    if (!advertiserId) return [];
+    const { data: rows, error } = await supabase
+      .from('events')
+      .select('*, categories(name, slug), destinations(slug), event_images(image_url, display_order)')
+      .eq('advertiser_id', advertiserId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (rows ?? []).map(mapEvent);
+  }, [advertiserId]);
+}
+
+export function useEventById(id: string | undefined) {
+  return useSupabaseQuery<Event | null>(async () => {
+    if (!id) return null;
+    const { data: row, error } = await supabase
+      .from('events')
+      .select('*, categories(name, slug), destinations(slug), event_images(image_url, display_order)')
+      .eq('id', id)
+      .single();
+    if (error) throw error;
+    return row ? mapEvent(row) : null;
+  }, [id]);
+}
+
+export async function createEvent(payload: Tables['events']['Insert']) {
+  const { data, error } = await supabase.from('events').insert(payload).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateEvent(id: string, payload: Tables['events']['Update']) {
+  const { error } = await supabase.from('events').update(payload).eq('id', id);
+  if (error) throw error;
+}
+
+export async function createAdvertiserProfile(payload: Tables['advertisers']['Insert']) {
+  const { data, error } = await supabase.from('advertisers').insert(payload).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateAdvertiserProfile(id: string, payload: Tables['advertisers']['Update']) {
+  const { error } = await supabase.from('advertisers').update(payload).eq('id', id);
+  if (error) throw error;
+}
+
+export async function insertEventImages(images: Tables['event_images']['Insert'][]) {
+  if (images.length === 0) return;
+  const { error } = await supabase.from('event_images').insert(images);
+  if (error) throw error;
+}

@@ -27,6 +27,7 @@ import PortalDashboard from './pages/portal/PortalDashboard';
 import PortalNewEvent from './pages/portal/PortalNewEvent';
 import PortalProfile from './pages/portal/PortalProfile';
 import PortalSubscription from './pages/portal/PortalSubscription';
+import PortalRegister from './pages/portal/PortalRegister';
 
 export const router = createBrowserRouter([
   {
@@ -68,12 +69,18 @@ export const router = createBrowserRouter([
   },
   {
     path: '/portal',
-    element: <ProtectedRoute><PortalLayout /></ProtectedRoute>,
+    element: <RoleGuard requiredRole="advertiser"><PortalLayout /></RoleGuard>,
     children: [
       { index: true, element: <PortalDashboard /> },
       { path: 'nuevo-evento', element: <PortalNewEvent /> },
+      { path: 'eventos/:id', lazy: () => import('./pages/portal/PortalEventDetail').then(m => ({ Component: m.default })) },
+      { path: 'eventos/:id/editar', lazy: () => import('./pages/portal/PortalEventEdit').then(m => ({ Component: m.default })) },
       { path: 'perfil', element: <PortalProfile /> },
       { path: 'suscripcion', element: <PortalSubscription /> },
     ],
+  },
+  {
+    path: '/portal/registro',
+    element: <ProtectedRoute><PortalRegister /></ProtectedRoute>,
   },
 ]);
