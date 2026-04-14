@@ -17,8 +17,7 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'light';
     const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    if (saved) return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return saved ?? 'light';
   });
 
   useEffect(() => {
