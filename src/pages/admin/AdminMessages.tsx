@@ -1,33 +1,53 @@
-import { Mail, Eye, Archive, Clock, MessageSquare } from 'lucide-react';
-
-const messages = [
-  { id: 1, name: 'Roberto Sánchez', email: 'roberto@gmail.com', subject: 'Consulta sobre anuncio', message: 'Hola, quisiera saber más sobre los planes de publicidad para mi restaurante en Chillán...', date: '2024-06-15 14:30', read: false },
-  { id: 2, name: 'Andrea Muñoz', email: 'andrea.m@outlook.com', subject: 'Problema con reserva', message: 'Intenté reservar el evento de vendimia pero no me aparece la opción de pago...', date: '2024-06-15 11:20', read: false },
-  { id: 3, name: 'Felipe Torres', email: 'ftorres@yahoo.com', subject: 'Sugerencia de evento', message: 'Les sugiero agregar la Fiesta de la Cereza que se realiza cada año en Los Ángeles...', date: '2024-06-14 18:45', read: true },
-  { id: 4, name: 'Camila Vergara', email: 'camila.v@gmail.com', subject: 'Colaboración fotográfica', message: 'Soy fotógrafa profesional y me encantaría colaborar con ustedes para cubrir eventos...', date: '2024-06-14 09:15', read: true },
-  { id: 5, name: 'Diego Rivas', email: 'drivas@hotmail.com', subject: 'Error en calendario', message: 'El evento del Festival de Jazz aparece con fecha incorrecta en el calendario...', date: '2024-06-13 16:00', read: true },
-];
+import { Eye, Archive, Clock, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useMessages, markMessageRead, deleteMessage } from '../../lib/hooks';
+import ConfirmDialog from '../../components/admin/ConfirmDialog';
 
 export default function AdminMessages() {
+  const { data: messages, loading, refetch } = useMessages();
+  const all = messages ?? [];
+  const unread = all.filter((m) => !m.read).length;
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const handleMarkRead = async (id: string) => {
+    try { await markMessageRead(id); refetch(); } catch { /* silent */ }
+  };
+
+  const handleDelete = async () => {
+    if (!deleting) return;
+    try { await deleteMessage(deleting); refetch(); } catch { /* silent */ }
+    setDeleting(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-display text-stone-900">Mensajes</h1>
-          <p className="text-sm text-stone-500 mt-1">{messages.filter(m => !m.read).length} sin leer</p>
+          <p className="text-sm text-stone-500 mt-1">{unread} sin leer</p>
         </div>
-        <button className="inline-flex items-center gap-2 text-sm text-stone-500 hover:text-stone-700 transition-colors">
-          <Archive size={16} /> Archivar leídos
-        </button>
       </div>
 
       <div className="space-y-3">
-        {messages.map((m) => (
-          <div key={m.id} className={`bg-white p-5 rounded-xl border ${m.read ? 'border-stone-200' : 'border-primary/30 bg-primary/[0.02]'}`}>
+        {all.map((m) => (
+          <div
+            key={m.id}
+            className={`bg-white p-5 rounded-xl border ${m.read ? 'border-stone-200' : 'border-primary/30 bg-primary/[0.02]'} cursor-pointer`}
+            onClick={() => setExpanded(expanded === m.id ? null : m.id)}
+          >
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-3">
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${m.read ? 'bg-stone-100 text-stone-500' : 'bg-primary/10 text-primary'}`}>
-                  {m.name.split(' ').map(w => w[0]).join('')}
+                  {m.name.split(' ').map((w) => w[0]).join('').slice(0, 2)}
                 </div>
                 <div>
                   <h3 className={`text-sm ${m.read ? 'text-stone-700' : 'font-semibold text-stone-900'}`}>{m.name}</h3>
@@ -36,27 +56,35 @@ export default function AdminMessages() {
               </div>
               <div className="flex items-center gap-2 text-xs text-stone-400">
                 <Clock size={12} />
-                {m.date}
+                {new Date(m.createdAt).toLocaleString('es-CL')}
               </div>
             </div>
             <h4 className={`text-sm mb-1 ${m.read ? 'text-stone-600' : 'font-medium text-stone-800'}`}>{m.subject}</h4>
-            <p className="text-sm text-stone-500 line-clamp-2">{m.message}</p>
-            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-stone-100">
-              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors">
-                <MessageSquare size={14} /> Responder
-              </button>
+            <p className={`text-sm text-stone-500 ${expanded === m.id ? '' : 'line-clamp-2'}`}>{m.message}</p>
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-stone-100" onClick={(e) => e.stopPropagation()}>
               {!m.read && (
-                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-stone-50 text-stone-600 rounded-lg hover:bg-stone-100 transition-colors">
+                <button onClick={() => handleMarkRead(m.id)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-stone-50 text-stone-600 rounded-lg hover:bg-stone-100 transition-colors">
                   <Eye size={14} /> Marcar leído
                 </button>
               )}
-              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-stone-50 text-stone-600 rounded-lg hover:bg-stone-100 transition-colors ml-auto">
-                <Archive size={14} /> Archivar
+              <button onClick={() => setDeleting(m.id)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors ml-auto">
+                <Trash2 size={14} /> Eliminar
               </button>
             </div>
           </div>
         ))}
+        {!all.length && <p className="text-center text-sm text-stone-400 py-10">No hay mensajes</p>}
       </div>
+
+      <ConfirmDialog
+        open={!!deleting}
+        title="Eliminar mensaje"
+        message="¿Estás seguro de eliminar este mensaje?"
+        confirmLabel="Eliminar"
+        danger
+        onConfirm={handleDelete}
+        onCancel={() => setDeleting(null)}
+      />
     </div>
   );
 }

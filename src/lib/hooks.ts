@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from './supabase';
 import type { Database } from './types';
 
-type DestinationRow = Database['public']['Tables']['destinations']['Row'];
+type Tables = Database['public']['Tables'];
+type DestinationRow = Tables['destinations']['Row'];
 
 // ── Shared types matching the old mock data interfaces ──
 export interface Event {
@@ -79,6 +80,7 @@ function useSupabaseQuery<T>(fetcher: () => Promise<T>, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -88,9 +90,11 @@ function useSupabaseQuery<T>(fetcher: () => Promise<T>, deps: unknown[] = []) {
       .catch((err) => { if (mounted) { setError(err.message); setLoading(false); } });
     return () => { mounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, [...deps, tick]);
 
-  return { data, loading, error };
+  const refetch = () => setTick((t) => t + 1);
+
+  return { data, loading, error, refetch };
 }
 
 // ── EVENTS ──
@@ -292,4 +296,159 @@ export function useFAQ() {
       category: r.category as 'tourist' | 'advertiser' | 'general',
     }));
   });
+}
+
+// ── ADMIN: Dashboard Stats ──
+export interface AdminStats {
+  totalEvents: number;
+  pendingEvents: number;
+  approvedEvents: number;
+  totalSubscribers: number;
+  unreadMessages: number;
+  totalTestimonials: number;
+}
+
+export function useAdminStats() {
+  return useSupabaseQuery<AdminStats>(async () => {
+    const [events, pending, approved, subs, msgs, testimonials] = await Promise.all([
+      supabase.from('events').select('id', { count: 'exact', head: true }),
+      supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('events').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+      supabase.from('newsletter_subscribers').select('id', { count: 'exact', head: true }).is('unsubscribed_at', null),
+      supabase.from('contact_messages').select('id', { count: 'exact', head: true }).eq('read', false),
+      supabase.from('testimonials').select('id', { count: 'exact', head: true }),
+    ]);
+    return {
+      totalEvents: events.count ?? 0,
+      pendingEvents: pending.count ?? 0,
+      approvedEvents: approved.count ?? 0,
+      totalSubscribers: subs.count ?? 0,
+      unreadMessages: msgs.count ?? 0,
+      totalTestimonials: testimonials.count ?? 0,
+    };
+  });
+}
+
+// ── ADMIN: Pending Events ──
+export function usePendingEvents() {
+  return useSupabaseQuery<Event[]>(async () => {
+    const { data: rows, error } = await supabase
+      .from('events')
+      .select('*, categories(name, slug), destinations(slug), event_images(image_url, display_order)')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (rows ?? []).map(mapEvent);
+  });
+}
+
+// ── ADMIN: Newsletter subscribers ──
+export interface Subscriber {
+  id: string;
+  email: string;
+  subscribedAt: string;
+  unsubscribedAt: string | null;
+}
+
+export function useSubscribers() {
+  return useSupabaseQuery<Subscriber[]>(async () => {
+    const { data, error } = await supabase
+      .from('newsletter_subscribers')
+      .select('*')
+      .order('subscribed_at', { ascending: false });
+
+    if (error) throw error;
+    return (data ?? []).map((r) => ({
+      id: r.id,
+      email: r.email,
+      subscribedAt: r.subscribed_at,
+      unsubscribedAt: r.unsubscribed_at,
+    }));
+  });
+}
+
+// ── ADMIN: Contact messages ──
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export function useMessages() {
+  return useSupabaseQuery<ContactMessage[]>(async () => {
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data ?? []).map((r) => ({
+      id: r.id,
+      name: r.name,
+      email: r.email,
+      subject: r.subject,
+      message: r.message,
+      read: r.read,
+      createdAt: r.created_at,
+    }));
+  });
+}
+
+// ── ADMIN: Mutation helpers ──
+export async function updateEventStatus(id: string, status: string) {
+  const { error } = await supabase.from('events').update({ status } as Tables['events']['Update']).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteEvent(id: string) {
+  await supabase.from('event_images').delete().eq('event_id', id);
+  const { error } = await supabase.from('events').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteTestimonial(id: string) {
+  const { error } = await supabase.from('testimonials').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteFAQItem(id: string) {
+  const { error } = await supabase.from('faq_items').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function markMessageRead(id: string) {
+  const { error } = await supabase.from('contact_messages').update({ read: true } as Tables['contact_messages']['Update']).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteMessage(id: string) {
+  const { error } = await supabase.from('contact_messages').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function upsertFAQItem(item: { id?: string; question: string; answer: string; category: string; display_order?: number }) {
+  const payload = { question: item.question, answer: item.answer, category: item.category as Tables['faq_items']['Row']['category'], display_order: item.display_order ?? 0, active: true } satisfies Tables['faq_items']['Insert'];
+  if (item.id) {
+    const { error } = await supabase.from('faq_items').update(payload as Tables['faq_items']['Update']).eq('id', item.id);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase.from('faq_items').insert(payload);
+    if (error) throw error;
+  }
+}
+
+export async function upsertTestimonial(t: { id?: string; name: string; city: string; text: string; rating: number; type: string; avatar_url: string; featured: boolean }) {
+  const payload = { name: t.name, city: t.city, text: t.text, rating: t.rating, type: t.type as Tables['testimonials']['Row']['type'], avatar_url: t.avatar_url, featured: t.featured } satisfies Tables['testimonials']['Insert'];
+  if (t.id) {
+    const { error } = await supabase.from('testimonials').update(payload as Tables['testimonials']['Update']).eq('id', t.id);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase.from('testimonials').insert(payload);
+    if (error) throw error;
+  }
 }

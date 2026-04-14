@@ -1,13 +1,35 @@
 import React, { useState } from 'react';
 import { Mail, MapPin, Phone, Send, CheckCircle } from 'lucide-react';
 import { motion } from 'motion/react';
+import { supabase } from '../lib/supabase';
+import type { Database } from '../lib/types';
 import AnimatedSection from '../components/ui/AnimatedSection';
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [form, setForm] = useState({ name: '', email: '', subject: 'Consulta general', message: '' });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError('');
+    setSending(true);
+    const { error } = await supabase.from('contact_messages').insert({
+      name: form.name,
+      email: form.email,
+      subject: form.subject,
+      message: form.message,
+    } as Database['public']['Tables']['contact_messages']['Insert']);
+    setSending(false);
+    if (error) {
+      setFormError('Error al enviar. Intenta de nuevo.');
+      return;
+    }
     setSent(true);
   };
 
@@ -72,16 +94,16 @@ export default function ContactPage() {
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
                     <label className="block text-sm font-medium text-stone-700 mb-1.5">Nombre</label>
-                    <input required type="text" className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Tu nombre" />
+                    <input required type="text" name="name" value={form.name} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Tu nombre" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-stone-700 mb-1.5">Email</label>
-                    <input required type="email" className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="tu@email.com" />
+                    <input required type="email" name="email" value={form.email} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="tu@email.com" />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1.5">Asunto</label>
-                  <select className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                  <select name="subject" value={form.subject} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                     <option>Consulta general</option>
                     <option>Quiero ser anunciante</option>
                     <option>Reportar un problema</option>
@@ -90,11 +112,12 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1.5">Mensaje</label>
-                  <textarea required rows={5} className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none" placeholder="Escribe tu mensaje..." />
+                  <textarea required rows={5} name="message" value={form.message} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none" placeholder="Escribe tu mensaje..." />
                 </div>
-                <button type="submit" className="w-full bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center gap-2">
-                  <Send size={16} /> Enviar Mensaje
+                <button type="submit" disabled={sending} className="w-full bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
+                  <Send size={16} /> {sending ? 'Enviando...' : 'Enviar Mensaje'}
                 </button>
+                {formError && <p className="text-sm text-red-500 text-center">{formError}</p>}
               </form>
             )}
           </AnimatedSection>

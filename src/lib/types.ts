@@ -21,6 +21,7 @@ export interface Database {
         };
         Insert: Omit<Database['public']['Tables']['categories']['Row'], 'id' | 'created_at'>;
         Update: Partial<Database['public']['Tables']['categories']['Insert']>;
+        Relationships: [];
       };
       destinations: {
         Row: {
@@ -35,6 +36,7 @@ export interface Database {
         };
         Insert: Omit<Database['public']['Tables']['destinations']['Row'], 'id' | 'created_at'>;
         Update: Partial<Database['public']['Tables']['destinations']['Insert']>;
+        Relationships: [];
       };
       events: {
         Row: {
@@ -65,6 +67,7 @@ export interface Database {
         };
         Insert: Omit<Database['public']['Tables']['events']['Row'], 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Database['public']['Tables']['events']['Insert']>;
+        Relationships: [];
       };
       event_images: {
         Row: {
@@ -76,6 +79,7 @@ export interface Database {
         };
         Insert: Omit<Database['public']['Tables']['event_images']['Row'], 'id' | 'created_at'>;
         Update: Partial<Database['public']['Tables']['event_images']['Insert']>;
+        Relationships: [];
       };
       advertisers: {
         Row: {
@@ -94,6 +98,7 @@ export interface Database {
         };
         Insert: Omit<Database['public']['Tables']['advertisers']['Row'], 'id' | 'created_at'>;
         Update: Partial<Database['public']['Tables']['advertisers']['Insert']>;
+        Relationships: [];
       };
       testimonials: {
         Row: {
@@ -109,6 +114,7 @@ export interface Database {
         };
         Insert: Omit<Database['public']['Tables']['testimonials']['Row'], 'id' | 'created_at'>;
         Update: Partial<Database['public']['Tables']['testimonials']['Insert']>;
+        Relationships: [];
       };
       newsletter_subscribers: {
         Row: {
@@ -119,6 +125,7 @@ export interface Database {
         };
         Insert: { email: string };
         Update: { unsubscribed_at?: string };
+        Relationships: [];
       };
       contact_messages: {
         Row: {
@@ -132,6 +139,7 @@ export interface Database {
         };
         Insert: Omit<Database['public']['Tables']['contact_messages']['Row'], 'id' | 'read' | 'created_at'>;
         Update: { read?: boolean };
+        Relationships: [];
       };
       faq_items: {
         Row: {
@@ -145,6 +153,7 @@ export interface Database {
         };
         Insert: Omit<Database['public']['Tables']['faq_items']['Row'], 'id' | 'created_at'>;
         Update: Partial<Database['public']['Tables']['faq_items']['Insert']>;
+        Relationships: [];
       };
       user_roles: {
         Row: {
@@ -155,8 +164,13 @@ export interface Database {
         };
         Insert: Omit<Database['public']['Tables']['user_roles']['Row'], 'id' | 'created_at'>;
         Update: { role?: UserRole };
+        Relationships: [];
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 }
 

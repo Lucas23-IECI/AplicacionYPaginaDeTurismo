@@ -1,21 +1,32 @@
 import React, { useState } from 'react';
 import { Mail, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase } from '../../lib/supabase';
+import type { Database } from '../../lib/types';
 import AnimatedSection from '../ui/AnimatedSection';
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError('Ingresa un email válido');
       return;
     }
-    // TODO: Connect to Supabase newsletter_subscribers table
+    setLoading(true);
+    const { error: dbError } = await supabase
+      .from('newsletter_subscribers')
+      .upsert({ email } as Database['public']['Tables']['newsletter_subscribers']['Insert'], { onConflict: 'email' });
+    setLoading(false);
+    if (dbError) {
+      setError('Error al suscribirse. Intenta de nuevo.');
+      return;
+    }
     setSubmitted(true);
     setEmail('');
     setTimeout(() => setSubmitted(false), 5000);
@@ -48,9 +59,10 @@ export default function NewsletterSignup() {
             </div>
             <button
               type="submit"
-              className="bg-white text-secondary px-8 py-3.5 rounded-xl font-bold text-sm hover:bg-accent hover:text-white transition-all whitespace-nowrap"
+              disabled={loading}
+              className="bg-white text-secondary px-8 py-3.5 rounded-xl font-bold text-sm hover:bg-accent hover:text-white transition-all whitespace-nowrap disabled:opacity-60"
             >
-              Suscribirme
+              {loading ? 'Enviando...' : 'Suscribirme'}
             </button>
           </form>
 

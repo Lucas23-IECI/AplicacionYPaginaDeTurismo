@@ -1,22 +1,32 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Search, MapPin, Calendar, SlidersHorizontal, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEvents, useCategories, formatPrice } from '../lib/hooks';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import StaggerContainer, { StaggerItem } from '../components/ui/StaggerContainer';
+import { SkeletonGrid } from '../components/ui/Skeleton';
 
 export default function EventsPage() {
-  const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get('q') ?? '');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get('cat') ?? null);
+  const [selectedDate, setSelectedDate] = useState(searchParams.get('fecha') ?? '');
   const [showFilters, setShowFilters] = useState(false);
   const { data: events, loading } = useEvents();
   const { data: categories } = useCategories();
 
+  useEffect(() => {
+    setSearch(searchParams.get('q') ?? '');
+    setSelectedCategory(searchParams.get('cat') || null);
+    setSelectedDate(searchParams.get('fecha') ?? '');
+  }, [searchParams]);
+
   const filtered = (events ?? []).filter((e) => {
     const matchesSearch = !search || e.title.toLowerCase().includes(search.toLowerCase()) || e.city.toLowerCase().includes(search.toLowerCase());
-    const matchesCat = !selectedCategory || e.category === selectedCategory;
-    return matchesSearch && matchesCat;
+    const matchesCat = !selectedCategory || e.categorySlug === selectedCategory;
+    const matchesDate = !selectedDate || e.dateStart === selectedDate || (e.dateEnd && e.dateStart <= selectedDate && e.dateEnd >= selectedDate);
+    return matchesSearch && matchesCat && matchesDate;
   });
 
   return (
@@ -93,6 +103,9 @@ export default function EventsPage() {
 
         <p className="text-sm text-stone-400 mb-6">{filtered.length} experiencias encontradas</p>
 
+        {loading ? (
+          <SkeletonGrid count={6} />
+        ) : (
         <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((event) => (
             <StaggerItem key={event.id}>
@@ -120,6 +133,7 @@ export default function EventsPage() {
             </StaggerItem>
           ))}
         </StaggerContainer>
+        )}
       </div>
     </div>
   );

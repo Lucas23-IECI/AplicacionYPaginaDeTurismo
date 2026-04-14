@@ -1,7 +1,24 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MapPin, Search, Calendar, Tag } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useCategories } from '../../lib/hooks';
 
 export default function Hero() {
+  const navigate = useNavigate();
+  const { data: categories } = useCategories();
+  const [location, setLocation] = useState('');
+  const [date, setDate] = useState('');
+  const [category, setCategory] = useState('');
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (location) params.set('q', location);
+    if (date) params.set('fecha', date);
+    if (category) params.set('cat', category);
+    navigate(`/eventos${params.toString() ? '?' + params.toString() : ''}`);
+  };
+
   return (
     <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
       <motion.div
@@ -63,6 +80,8 @@ export default function Hero() {
                   className="bg-transparent w-full text-stone-800 placeholder:text-stone-400 text-sm font-medium outline-none"
                   placeholder="¿Dónde estás?"
                   type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
                 />
               </div>
             </div>
@@ -82,24 +101,23 @@ export default function Hero() {
               <label className="text-[10px] uppercase font-bold tracking-widest text-stone-400 px-1">Fecha</label>
               <div className="flex items-center gap-2 bg-stone-50 px-4 py-3 rounded-xl">
                 <Calendar size={18} className="text-stone-400 shrink-0" />
-                <input className="bg-transparent w-full text-stone-800 text-sm font-medium outline-none cursor-pointer" type="date" />
+                <input className="bg-transparent w-full text-stone-800 text-sm font-medium outline-none cursor-pointer" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
               </div>
             </div>
             <div className="w-full md:w-40 space-y-1">
               <label className="text-[10px] uppercase font-bold tracking-widest text-stone-400 px-1">Categoría</label>
               <div className="flex items-center gap-2 bg-stone-50 px-4 py-3 rounded-xl">
                 <Tag size={18} className="text-stone-400 shrink-0" />
-                <select className="bg-transparent w-full text-stone-800 text-sm font-medium outline-none cursor-pointer">
-                  <option>Todas</option>
-                  <option>Tradición</option>
-                  <option>Arte</option>
-                  <option>Aventura</option>
-                  <option>Gastronomía</option>
+                <select className="bg-transparent w-full text-stone-800 text-sm font-medium outline-none cursor-pointer" value={category} onChange={(e) => setCategory(e.target.value)}>
+                  <option value="">Todas</option>
+                  {(categories ?? []).map((c) => (
+                    <option key={c.id} value={c.slug}>{c.name}</option>
+                  ))}
                 </select>
               </div>
             </div>
             <div className="flex items-end">
-              <button className="w-full md:w-auto bg-primary text-white px-8 py-3 rounded-xl font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center gap-2">
+              <button onClick={handleSearch} className="w-full md:w-auto bg-primary text-white px-8 py-3 rounded-xl font-semibold hover:bg-primary-hover transition-colors flex items-center justify-center gap-2">
                 <Search size={18} />
                 <span>Buscar</span>
               </button>

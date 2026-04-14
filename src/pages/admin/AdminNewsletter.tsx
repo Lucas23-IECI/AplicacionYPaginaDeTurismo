@@ -1,49 +1,60 @@
-import { Mail, Download, Users, TrendingUp } from 'lucide-react';
-
-const subscribers = [
-  { id: 1, email: 'maria.gonzalez@gmail.com', date: '2024-06-01', status: 'active' },
-  { id: 2, email: 'carlos.muñoz@outlook.com', date: '2024-06-03', status: 'active' },
-  { id: 3, email: 'ana.rios@yahoo.com', date: '2024-06-05', status: 'active' },
-  { id: 4, email: 'pedro.silva@gmail.com', date: '2024-06-08', status: 'unsubscribed' },
-  { id: 5, email: 'lucia.fernandez@hotmail.com', date: '2024-06-10', status: 'active' },
-  { id: 6, email: 'jorge.castro@gmail.com', date: '2024-06-12', status: 'active' },
-  { id: 7, email: 'valentina.diaz@outlook.com', date: '2024-06-15', status: 'active' },
-];
-
-const stats = [
-  { label: 'Total Suscriptores', value: '1,247', icon: Users, color: 'bg-blue-50 text-blue-600' },
-  { label: 'Nuevos este mes', value: '+89', icon: TrendingUp, color: 'bg-green-50 text-green-600' },
-  { label: 'Tasa apertura', value: '42%', icon: Mail, color: 'bg-amber-50 text-amber-600' },
-];
+import { Mail, Download, Users } from 'lucide-react';
+import { useSubscribers } from '../../lib/hooks';
+import StatusBadge from '../../components/admin/StatusBadge';
 
 export default function AdminNewsletter() {
+  const { data: subscribers, loading } = useSubscribers();
+  const all = subscribers ?? [];
+  const active = all.filter((s) => !s.unsubscribedAt).length;
+
+  const exportCSV = () => {
+    const csv = ['email,fecha_suscripcion,estado', ...all.map((s) => `${s.email},${s.subscribedAt},${s.unsubscribedAt ? 'desuscrito' : 'activo'}`)].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'suscriptores.csv'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-display text-stone-900">Newsletter</h1>
-        <button className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-hover transition-colors">
-          <Mail size={16} /> Enviar Newsletter
-        </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {stats.map((s) => (
-          <div key={s.label} className="bg-white p-5 rounded-xl border border-stone-200">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${s.color}`}><s.icon size={18} /></div>
-              <div>
-                <p className="text-xs text-stone-400">{s.label}</p>
-                <p className="text-xl font-bold text-stone-900">{s.value}</p>
-              </div>
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="bg-white p-5 rounded-xl border border-stone-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-50 text-blue-600"><Users size={18} /></div>
+            <div>
+              <p className="text-xs text-stone-400">Suscriptores activos</p>
+              <p className="text-xl font-bold text-stone-900">{active}</p>
             </div>
           </div>
-        ))}
+        </div>
+        <div className="bg-white p-5 rounded-xl border border-stone-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-50 text-green-600"><Mail size={18} /></div>
+            <div>
+              <p className="text-xs text-stone-400">Total registrados</p>
+              <p className="text-xl font-bold text-stone-900">{all.length}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3 border-b border-stone-100">
-          <h2 className="font-medium text-stone-900 text-sm">Últimos suscriptores</h2>
-          <button className="inline-flex items-center gap-1.5 text-xs text-primary font-medium hover:underline">
+          <h2 className="font-medium text-stone-900 text-sm">Suscriptores</h2>
+          <button onClick={exportCSV} className="inline-flex items-center gap-1.5 text-xs text-primary font-medium hover:underline">
             <Download size={14} /> Exportar CSV
           </button>
         </div>
@@ -56,17 +67,18 @@ export default function AdminNewsletter() {
             </tr>
           </thead>
           <tbody>
-            {subscribers.map((s) => (
+            {all.map((s) => (
               <tr key={s.id} className="border-b border-stone-50 hover:bg-stone-50/50">
                 <td className="px-5 py-3 text-sm text-stone-700">{s.email}</td>
-                <td className="px-5 py-3 text-sm text-stone-500">{s.date}</td>
+                <td className="px-5 py-3 text-sm text-stone-500">{new Date(s.subscribedAt).toLocaleDateString('es-CL')}</td>
                 <td className="px-5 py-3">
-                  <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${s.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-stone-100 text-stone-500'}`}>
-                    {s.status === 'active' ? 'Activo' : 'Desuscrito'}
-                  </span>
+                  <StatusBadge status={s.unsubscribedAt ? 'unsubscribed' : 'active'} />
                 </td>
               </tr>
             ))}
+            {!all.length && (
+              <tr><td colSpan={3} className="text-center py-10 text-sm text-stone-400">No hay suscriptores</td></tr>
+            )}
           </tbody>
         </table>
       </div>

@@ -3,6 +3,8 @@ import PublicLayout from './layouts/PublicLayout';
 import AdminLayout from './layouts/AdminLayout';
 import PortalLayout from './layouts/PortalLayout';
 import LegalLayout from './layouts/LegalLayout';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import RoleGuard from './components/auth/RoleGuard';
 import HomePage from './pages/HomePage';
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
@@ -52,10 +54,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: <AdminLayout />,
+    element: <RoleGuard requiredRole="admin"><AdminLayout /></RoleGuard>,
     children: [
       { index: true, element: <AdminDashboard /> },
       { path: 'eventos', element: <AdminEvents /> },
+      { path: 'eventos/:id/editar', lazy: () => import('./pages/admin/AdminEventEdit').then(m => ({ Component: m.default })) },
       { path: 'anunciantes', element: <AdminAdvertisers /> },
       { path: 'testimonios', element: <AdminTestimonials /> },
       { path: 'faq', element: <AdminFAQ /> },
@@ -65,7 +68,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/portal',
-    element: <PortalLayout />,
+    element: <ProtectedRoute><PortalLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <PortalDashboard /> },
       { path: 'nuevo-evento', element: <PortalNewEvent /> },
