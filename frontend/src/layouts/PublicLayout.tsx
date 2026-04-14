@@ -13,7 +13,7 @@ export default function PublicLayout() {
   }, [pathname]);
 
   return (
-    <div className="bg-white dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 font-body min-h-screen">
+    <div className="bg-white dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 font-body min-h-screen overflow-x-hidden">
       <ScrollProgress />
       <Navbar />
       <main>
