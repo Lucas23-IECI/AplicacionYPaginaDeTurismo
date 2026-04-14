@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LayoutDashboard, LogIn } from 'lucide-react';
+import { useAuth, useRole } from '../../lib/auth';
 
 const navLinks = [
   { to: '/eventos', label: 'Experiencias' },
@@ -15,6 +16,9 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
   const isHome = pathname === '/';
+  const { user, signOut } = useAuth();
+  const { role } = useRole();
+  const dashboardPath = role === 'admin' ? '/admin' : role === 'advertiser' ? '/portal' : null;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -65,12 +69,30 @@ export default function Navbar() {
           ))}
         </div>
 
-        <Link
-          to="/anunciantes"
-          className={`hidden md:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${btnStyle}`}
-        >
-          Portal Anunciantes
-        </Link>
+        {user && dashboardPath ? (
+          <div className="hidden md:flex items-center gap-3">
+            <Link
+              to={dashboardPath}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${btnStyle}`}
+            >
+              <LayoutDashboard size={16} />
+              {role === 'admin' ? 'Admin' : 'Mi Panel'}
+            </Link>
+            <button
+              onClick={() => signOut()}
+              className={`text-sm font-medium transition-colors ${textColor} ${hoverColor}`}
+            >
+              Salir
+            </button>
+          </div>
+        ) : (
+          <Link
+            to="/anunciantes"
+            className={`hidden md:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${btnStyle}`}
+          >
+            Portal Anunciantes
+          </Link>
+        )}
 
         <button
           className={`md:hidden p-2 transition-colors ${!isHome || scrolled ? 'text-stone-700' : 'text-white'}`}
@@ -104,12 +126,30 @@ export default function Navbar() {
                   {link.label}
                 </NavLink>
               ))}
-              <Link
-                to="/anunciantes"
-                className="block text-sm font-semibold text-primary py-3 px-2"
-              >
-                Portal Anunciantes
-              </Link>
+              {user && dashboardPath ? (
+                <>
+                  <Link
+                    to={dashboardPath}
+                    className="flex items-center gap-2 text-sm font-semibold text-primary py-3 px-2"
+                  >
+                    <LayoutDashboard size={16} />
+                    {role === 'admin' ? 'Admin' : 'Mi Panel'}
+                  </Link>
+                  <button
+                    onClick={() => signOut()}
+                    className="block text-sm font-medium text-stone-500 py-3 px-2 w-full text-left"
+                  >
+                    Cerrar sesión
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/anunciantes"
+                  className="block text-sm font-semibold text-primary py-3 px-2"
+                >
+                  Portal Anunciantes
+                </Link>
+              )}
             </div>
           </motion.div>
         )}

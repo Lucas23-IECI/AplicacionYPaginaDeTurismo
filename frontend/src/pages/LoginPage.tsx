@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useAuth } from '../lib/auth';
+import { useAuth, useRole } from '../lib/auth';
 import { usePageTitle } from '../lib/usePageTitle';
+import { supabase } from '../lib/supabase';
 
 export default function LoginPage() {
   usePageTitle('Iniciar Sesión');
@@ -28,8 +29,21 @@ export default function LoginPage() {
         setIsRegister(false);
         alert('Cuenta creada. Revisa tu email para confirmar.');
       } else {
-        await signIn(email, password);
-        navigate('/admin');
+        const result = await signIn(email, password);
+        // Redirect based on role
+        const userId = result.user?.id;
+        if (userId) {
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', userId)
+            .single<{ role: string }>();
+          if (roleData?.role === 'admin') navigate('/admin');
+          else if (roleData?.role === 'advertiser') navigate('/portal');
+          else navigate('/');
+        } else {
+          navigate('/');
+        }
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error de autenticación');
