@@ -2,11 +2,15 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import { Star } from 'lucide-react';
 import AnimatedSection from '../ui/AnimatedSection';
-import { testimonials } from '../../data/testimonials';
+import { useTestimonials } from '../../lib/hooks';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
 export default function TestimonialsSection() {
+  const { data: testimonials, loading } = useTestimonials();
+
+  if (loading || !testimonials?.length) return null;
+
   return (
     <section className="py-24 px-6">
       <div className="max-w-7xl mx-auto">

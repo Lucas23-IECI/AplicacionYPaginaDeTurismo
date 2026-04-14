@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, MapPin, Clock } from 'lucide-react';
-import { events, formatPrice } from '../data/events';
+import { useEvents, formatPrice } from '../lib/hooks';
 import AnimatedSection from '../components/ui/AnimatedSection';
 
 const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -9,6 +9,8 @@ const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto
 export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(3); // Abril
   const [currentYear] = useState(2026);
+  const { data: events } = useEvents();
+  const allEvents = events ?? [];
 
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstDay = new Date(currentYear, currentMonth, 1).getDay();
@@ -17,7 +19,7 @@ export default function CalendarPage() {
 
   const getEventsForDay = (day: number) => {
     const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return events.filter((e) => e.dateStart === dateStr || (e.dateEnd && e.dateStart <= dateStr && e.dateEnd >= dateStr));
+    return allEvents.filter((e) => e.dateStart === dateStr || (e.dateEnd && e.dateStart <= dateStr && e.dateEnd >= dateStr));
   };
 
   return (
@@ -72,7 +74,7 @@ export default function CalendarPage() {
         {/* Upcoming list */}
         <h3 className="text-2xl font-display text-stone-900 mt-12 mb-6">Próximos este mes</h3>
         <div className="space-y-3">
-          {events.slice(0, 6).map((event) => (
+          {allEvents.slice(0, 6).map((event) => (
             <Link key={event.id} to={`/evento/${event.slug}`} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-stone-100 hover:border-primary/30 transition-colors group">
               <img src={event.images[0]} alt={event.title} className="w-16 h-16 rounded-xl object-cover" />
               <div className="flex-1 min-w-0">

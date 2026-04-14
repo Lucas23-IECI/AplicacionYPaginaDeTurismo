@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Upload, Calendar, MapPin, DollarSign, Tag, FileText, Image, Send } from 'lucide-react';
-import { categories } from '../../data/categories';
-import { destinations } from '../../data/destinations';
+import { useCategories, useDestinations } from '../../lib/hooks';
 
 export default function PortalNewEvent() {
   const [submitted, setSubmitted] = useState(false);
+  const { data: categories } = useCategories();
+  const { data: destinations } = useDestinations();
 
   if (submitted) {
     return (
@@ -44,7 +45,7 @@ export default function PortalNewEvent() {
             </label>
             <select className="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white">
               <option value="">Seleccionar categoría</option>
-              {categories.map(c => <option key={c.id} value={c.slug}>{c.name}</option>)}
+              {(categories ?? []).map(c => <option key={c.id} value={c.slug}>{c.name}</option>)}
             </select>
           </div>
           <div>
@@ -53,7 +54,7 @@ export default function PortalNewEvent() {
             </label>
             <select className="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white">
               <option value="">Seleccionar destino</option>
-              {destinations.map(d => <option key={d.id} value={d.slug}>{d.name}</option>)}
+              {(destinations ?? []).map(d => <option key={d.id} value={d.slug}>{d.name}</option>)}
             </select>
           </div>
         </div>

@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown } from 'lucide-react';
 import AnimatedSection from '../ui/AnimatedSection';
-import { faqItems } from '../../data/faq';
+import { useFAQ } from '../../lib/hooks';
 
 export default function FAQSection() {
   const [openId, setOpenId] = useState<string | null>(null);
+  const { data: faqItems, loading } = useFAQ();
+
+  if (loading || !faqItems?.length) return null;
 
   return (
     <section className="py-24 px-6">

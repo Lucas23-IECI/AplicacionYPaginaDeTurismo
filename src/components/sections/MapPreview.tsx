@@ -2,7 +2,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import AnimatedSection from '../ui/AnimatedSection';
-import { events } from '../../data/events';
+import { useEvents } from '../../lib/hooks';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -17,9 +17,9 @@ const icon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-const mapEvents = events.filter((e) => e.status === 'approved').slice(0, 10);
-
 export default function MapPreview() {
+  const { data: events } = useEvents();
+  const mapEvents = (events ?? []).slice(0, 10);
   return (
     <section className="py-24 px-6">
       <div className="max-w-7xl mx-auto">

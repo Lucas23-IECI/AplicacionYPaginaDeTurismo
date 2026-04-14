@@ -1,8 +1,6 @@
 import { Calendar, Eye, TrendingUp, DollarSign, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { events } from '../../data/events';
-
-const myEvents = events.filter(e => e.advertiserId === 'adv-001').slice(0, 5);
+import { useEvents } from '../../lib/hooks';
 
 const stats = [
   { label: 'Mis Eventos', value: '8', icon: Calendar, color: 'bg-primary/10 text-primary' },
@@ -12,6 +10,9 @@ const stats = [
 ];
 
 export default function PortalDashboard() {
+  const { data: events } = useEvents();
+  const myEvents = (events ?? []).filter(e => e.advertiserId === 'adv-001').slice(0, 5);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">

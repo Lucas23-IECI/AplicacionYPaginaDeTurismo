@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, MapPin, Calendar, SlidersHorizontal, X } from 'lucide-react';
 import { motion } from 'motion/react';
-import { events, formatPrice } from '../data/events';
-import { categories } from '../data/categories';
+import { useEvents, useCategories, formatPrice } from '../lib/hooks';
 import AnimatedSection from '../components/ui/AnimatedSection';
 import StaggerContainer, { StaggerItem } from '../components/ui/StaggerContainer';
 
@@ -11,8 +10,10 @@ export default function EventsPage() {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const { data: events, loading } = useEvents();
+  const { data: categories } = useCategories();
 
-  const filtered = events.filter((e) => {
+  const filtered = (events ?? []).filter((e) => {
     const matchesSearch = !search || e.title.toLowerCase().includes(search.toLowerCase()) || e.city.toLowerCase().includes(search.toLowerCase());
     const matchesCat = !selectedCategory || e.category === selectedCategory;
     return matchesSearch && matchesCat;
@@ -64,7 +65,7 @@ export default function EventsPage() {
             >
               Todas
             </button>
-            {categories.map((cat) => (
+            {(categories ?? []).map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.name)}

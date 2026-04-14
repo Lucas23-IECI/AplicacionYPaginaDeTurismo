@@ -1,13 +1,21 @@
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Calendar, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
-import { destinations } from '../data/destinations';
-import { events, formatPrice } from '../data/events';
+import { useDestinationBySlug, useEvents, formatPrice } from '../lib/hooks';
 import AnimatedSection from '../components/ui/AnimatedSection';
 
 export default function DestinationDetailPage() {
   const { slug } = useParams();
-  const destination = destinations.find((d) => d.slug === slug);
+  const { data: destination, loading } = useDestinationBySlug(slug);
+  const { data: events } = useEvents();
+
+  if (loading) {
+    return (
+      <div className="pt-32 pb-16 flex justify-center">
+        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!destination) {
     return (
@@ -18,7 +26,7 @@ export default function DestinationDetailPage() {
     );
   }
 
-  const destEvents = events.filter((e) => e.destinationSlug === slug);
+  const destEvents = (events ?? []).filter((e) => e.destinationSlug === slug);
 
   return (
     <div className="pt-20 pb-16">

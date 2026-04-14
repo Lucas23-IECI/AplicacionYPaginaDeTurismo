@@ -1,9 +1,19 @@
 import { Plus, Edit, Trash2, ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
 import { useState } from 'react';
-import { faqItems } from '../../data/faq';
+import { useFAQ } from '../../lib/hooks';
 
 export default function AdminFAQ() {
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const { data: faqItems, loading } = useFAQ();
+  const allFAQ = faqItems ?? [];
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -15,7 +25,7 @@ export default function AdminFAQ() {
       </div>
 
       <div className="space-y-3">
-        {faqItems.map((item) => (
+        {allFAQ.map((item) => (
           <div key={item.id} className="bg-white rounded-xl border border-stone-200 overflow-hidden">
             <div
               className="flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-stone-50/50"

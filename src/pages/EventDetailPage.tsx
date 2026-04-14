@@ -1,12 +1,20 @@
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Calendar, Clock, ArrowLeft, Share2, Heart, Tag } from 'lucide-react';
 import { motion } from 'motion/react';
-import { events, formatPrice } from '../data/events';
+import { useEventBySlug, formatPrice } from '../lib/hooks';
 import AnimatedSection from '../components/ui/AnimatedSection';
 
 export default function EventDetailPage() {
   const { slug } = useParams();
-  const event = events.find((e) => e.slug === slug);
+  const { data: event, loading } = useEventBySlug(slug);
+
+  if (loading) {
+    return (
+      <div className="pt-32 pb-16 flex justify-center">
+        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!event) {
     return (

@@ -1,5 +1,5 @@
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
-import { events } from '../../data/events';
+import { useAllEvents } from '../../lib/hooks';
 
 const statusColors: Record<string, string> = {
   approved: 'bg-green-50 text-green-700',
@@ -8,6 +8,17 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AdminEvents() {
+  const { data: events, loading } = useAllEvents();
+  const allEvents = events ?? [];
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -36,7 +47,7 @@ export default function AdminEvents() {
             </tr>
           </thead>
           <tbody>
-            {events.slice(0, 10).map((event) => (
+            {allEvents.slice(0, 10).map((event) => (
               <tr key={event.id} className="border-b border-stone-50 hover:bg-stone-50/50">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">

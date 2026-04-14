@@ -1,16 +1,27 @@
 import { Star, Check, X, MessageSquare } from 'lucide-react';
-import { testimonials } from '../../data/testimonials';
+import { useTestimonials } from '../../lib/hooks';
 
 export default function AdminTestimonials() {
+  const { data: testimonials, loading } = useTestimonials();
+  const allTestimonials = testimonials ?? [];
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-display text-stone-900">Gestión de Testimonios</h1>
-        <span className="text-sm text-stone-500">{testimonials.length} testimonios</span>
+        <span className="text-sm text-stone-500">{allTestimonials.length} testimonios</span>
       </div>
 
       <div className="grid gap-4">
-        {testimonials.map((t) => (
+        {allTestimonials.map((t) => (
           <div key={t.id} className="bg-white p-5 rounded-xl border border-stone-200">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3 mb-3">
