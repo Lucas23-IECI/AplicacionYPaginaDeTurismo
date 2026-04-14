@@ -24,8 +24,8 @@ export default function DestinationDetailPage() {
   if (!destination) {
     return (
       <div className="pt-32 pb-16 text-center">
-        <h1 className="text-3xl font-display text-stone-900 mb-4">Destino no encontrado</h1>
-        <Link to="/" className="text-primary font-semibold hover:underline">← Volver al inicio</Link>
+        <h1 className="text-3xl font-display text-stone-900 dark:text-white mb-4">Destino no encontrado</h1>
+        <Link to="/destinos" className="text-primary font-semibold hover:underline">← Ver todos los destinos</Link>
       </div>
     );
   }
@@ -54,10 +54,10 @@ export default function DestinationDetailPage() {
       <div className="max-w-7xl mx-auto px-6 py-10">
         <Breadcrumb items={[{ label: destination.name }]} />
         <AnimatedSection variant="fadeUp">
-          <p className="text-lg text-stone-600 leading-relaxed mb-10 max-w-3xl">{destination.description}</p>
+          <p className="text-lg text-stone-600 dark:text-zinc-400 leading-relaxed mb-10 max-w-3xl">{destination.description}</p>
         </AnimatedSection>
 
-        <h2 className="text-2xl font-display text-stone-900 mb-6">Experiencias en {destination.name}</h2>
+        <h2 className="text-2xl font-display text-stone-900 dark:text-white mb-6">Experiencias en {destination.name}</h2>
         {destEvents.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {destEvents.map((event) => (
@@ -65,7 +65,7 @@ export default function DestinationDetailPage() {
             ))}
           </div>
         ) : (
-          <p className="text-stone-400 text-center py-12">Próximamente experiencias en este destino.</p>
+          <p className="text-stone-400 dark:text-zinc-500 text-center py-12">Próximamente experiencias en este destino.</p>
         )}
       </div>
     </div>

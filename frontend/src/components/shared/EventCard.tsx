@@ -29,7 +29,7 @@ export default function EventCard({ event, linkPrefix = '/evento', showStatus = 
   return (
     <Link
       to={href}
-      className="block bg-white rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-300 border border-stone-100"
+      className="block bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-300 border border-stone-100 dark:border-zinc-800"
     >
       <div className="relative h-52 overflow-hidden">
         <img
@@ -53,21 +53,21 @@ export default function EventCard({ event, linkPrefix = '/evento', showStatus = 
         )}
       </div>
       <div className="p-5">
-        <div className="flex items-center gap-3 text-xs text-stone-400 mb-2">
+        <div className="flex items-center gap-3 text-xs text-stone-400 dark:text-zinc-500 mb-2">
           <span className="flex items-center gap-1"><Calendar size={12} /> {event.dateStart}</span>
           <span className="flex items-center gap-1"><MapPin size={12} /> {event.city}</span>
           {distance !== null && (
             <span className="flex items-center gap-1 text-primary/70"><Navigation size={12} /> {distance} km</span>
           )}
         </div>
-        <h3 className="font-semibold text-stone-900 mb-1 leading-snug">{event.title}</h3>
-        <p className="text-sm text-stone-500 line-clamp-2 mb-4">{event.shortDescription}</p>
-        <div className="flex justify-between items-center pt-3 border-t border-stone-100">
+        <h3 className="font-semibold text-stone-900 dark:text-white mb-1 leading-snug">{event.title}</h3>
+        <p className="text-sm text-stone-500 dark:text-zinc-400 line-clamp-2 mb-4">{event.shortDescription}</p>
+        <div className="flex justify-between items-center pt-3 border-t border-stone-100 dark:border-zinc-800">
           <span className="text-primary font-bold text-sm">
             {event.price === 0 ? 'Gratis' : formatPrice(event.price)}
           </span>
           {!showStatus && (
-            <span className="text-stone-300 hover:text-primary transition-colors">
+            <span className="text-stone-300 dark:text-zinc-600 hover:text-primary transition-colors">
               <Heart size={18} />
             </span>
           )}

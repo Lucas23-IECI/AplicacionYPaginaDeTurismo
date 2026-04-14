@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, LayoutDashboard, LogIn } from 'lucide-react';
+import { Menu, X, LayoutDashboard, LogIn, Sun, Moon } from 'lucide-react';
 import { useAuth, useRole } from '../../lib/auth';
+import { useDarkMode } from '../../lib/darkMode';
 
 const navLinks = [
   { to: '/eventos', label: 'Experiencias' },
-  { to: '/destinos/chillan', label: 'Destinos' },
+  { to: '/destinos', label: 'Destinos' },
   { to: '/calendario', label: 'Calendario' },
   { to: '/nosotros', label: 'Nosotros' },
+  { to: '/contacto', label: 'Contacto' },
 ];
 
 export default function Navbar() {
@@ -18,6 +20,7 @@ export default function Navbar() {
   const isHome = pathname === '/';
   const { user, signOut } = useAuth();
   const { role } = useRole();
+  const { theme, toggle } = useDarkMode();
   const dashboardPath = role === 'admin' ? '/admin' : role === 'advertiser' ? '/portal' : null;
 
   useEffect(() => {
@@ -31,10 +34,10 @@ export default function Navbar() {
   }, [pathname]);
 
   const navBg = !isHome || scrolled
-    ? 'bg-white/95 backdrop-blur-lg border-b border-warm-border shadow-sm'
+    ? 'bg-white/95 dark:bg-zinc-900/95 backdrop-blur-lg border-b border-warm-border dark:border-zinc-800 shadow-sm'
     : 'bg-transparent';
 
-  const textColor = !isHome || scrolled ? 'text-stone-600' : 'text-white/90';
+  const textColor = !isHome || scrolled ? 'text-stone-600 dark:text-zinc-400' : 'text-white/90';
   const logoColor = !isHome || scrolled ? 'text-primary' : 'text-white';
   const hoverColor = !isHome || scrolled ? 'hover:text-primary' : 'hover:text-white';
   const btnStyle = !isHome || scrolled
@@ -71,6 +74,9 @@ export default function Navbar() {
 
         {user && dashboardPath ? (
           <div className="hidden md:flex items-center gap-3">
+            <button onClick={toggle} className={`p-2 rounded-full transition-colors ${textColor} ${hoverColor}`} aria-label="Cambiar tema">
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             <Link
               to={dashboardPath}
               className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${btnStyle}`}
@@ -86,12 +92,17 @@ export default function Navbar() {
             </button>
           </div>
         ) : (
-          <Link
-            to="/anunciantes"
-            className={`hidden md:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${btnStyle}`}
-          >
-            Portal Anunciantes
-          </Link>
+          <div className="hidden md:flex items-center gap-3">
+            <button onClick={toggle} className={`p-2 rounded-full transition-colors ${textColor} ${hoverColor}`} aria-label="Cambiar tema">
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <Link
+              to="/anunciantes"
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${btnStyle}`}
+            >
+              Portal Anunciantes
+            </Link>
+          </div>
         )}
 
         <button
@@ -110,7 +121,7 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="md:hidden bg-white border-t border-warm-border overflow-hidden"
+            className="md:hidden bg-white dark:bg-zinc-900 border-t border-warm-border dark:border-zinc-800 overflow-hidden"
           >
             <div className="px-6 py-4 space-y-1">
               {navLinks.map((link) => (
@@ -119,13 +130,20 @@ export default function Navbar() {
                   to={link.to}
                   className={({ isActive }) =>
                     `block text-sm font-medium py-3 px-2 rounded-lg transition-colors ${
-                      isActive ? 'text-primary bg-primary/5' : 'text-stone-700 hover:bg-stone-50'
+                      isActive ? 'text-primary bg-primary/5' : 'text-stone-700 dark:text-zinc-300 hover:bg-stone-50 dark:hover:bg-zinc-800'
                     }`
                   }
                 >
                   {link.label}
                 </NavLink>
               ))}
+              <button
+                onClick={toggle}
+                className="flex items-center gap-2 text-sm font-medium text-stone-500 dark:text-zinc-400 py-3 px-2 w-full text-left"
+              >
+                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                {theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+              </button>
               {user && dashboardPath ? (
                 <>
                   <Link

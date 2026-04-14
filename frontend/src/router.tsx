@@ -9,6 +9,7 @@ import HomePage from './pages/HomePage';
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
 import DestinationDetailPage from './pages/DestinationDetailPage';
+import DestinationsPage from './pages/DestinationsPage';
 import CalendarPage from './pages/CalendarPage';
 import AdvertisersPage from './pages/AdvertisersPage';
 import ContactPage from './pages/ContactPage';
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: 'eventos', element: <EventsPage /> },
       { path: 'evento/:slug', element: <EventDetailPage /> },
+      { path: 'destinos', element: <DestinationsPage /> },
       { path: 'destinos/:slug', element: <DestinationDetailPage /> },
       { path: 'calendario', element: <CalendarPage /> },
       { path: 'anunciantes', element: <AdvertisersPage /> },

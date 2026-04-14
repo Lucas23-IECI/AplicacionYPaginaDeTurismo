@@ -73,8 +73,8 @@ export default function EventsPage() {
         <Breadcrumb items={[{ label: 'Experiencias' }]} />
 
         <AnimatedSection variant="fadeUp">
-          <h1 className="text-4xl md:text-5xl font-display text-stone-900 mb-4">Todas las Experiencias</h1>
-          <p className="text-stone-500 text-lg mb-10 max-w-xl">
+          <h1 className="text-4xl md:text-5xl font-display text-stone-900 dark:text-white mb-4">Todas las Experiencias</h1>
+          <p className="text-stone-500 dark:text-zinc-400 text-lg mb-10 max-w-xl">
             Explora el catálogo completo de actividades curadas en la Región de Ñuble y Biobío.
           </p>
         </AnimatedSection>
@@ -88,20 +88,20 @@ export default function EventsPage() {
               placeholder="Buscar por nombre o ciudad..."
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 rounded-xl border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full pl-11 pr-4 py-3 rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:border-primary transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-medium text-stone-700 dark:text-zinc-300 hover:border-primary transition-colors"
             >
               <SlidersHorizontal size={16} />
               Filtros
             </button>
             <button
               onClick={() => setViewMode(viewMode === 'grid' ? 'map' : 'grid')}
-              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:border-primary transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-medium text-stone-700 dark:text-zinc-300 hover:border-primary transition-colors"
               title={viewMode === 'grid' ? 'Ver mapa' : 'Ver grilla'}
             >
               {viewMode === 'grid' ? <MapIcon size={16} /> : <Grid3X3 size={16} />}
@@ -119,7 +119,7 @@ export default function EventsPage() {
             <button
               onClick={() => handleCategory(null)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                !selectedCategory ? 'bg-primary text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                !selectedCategory ? 'bg-primary text-white' : 'bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700'
               }`}
             >
               Todas
@@ -129,7 +129,7 @@ export default function EventsPage() {
                 key={cat.id}
                 onClick={() => handleCategory(cat.slug)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedCategory === cat.slug ? 'bg-primary text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  selectedCategory === cat.slug ? 'bg-primary text-white' : 'bg-stone-100 dark:bg-zinc-800 text-stone-600 dark:text-zinc-300 hover:bg-stone-200 dark:hover:bg-zinc-700'
                 }`}
               >
                 {cat.icon} {cat.name}
@@ -150,7 +150,7 @@ export default function EventsPage() {
           </div>
         )}
 
-        <p className="text-sm text-stone-400 mb-6">{filtered.length} experiencias encontradas</p>
+        <p className="text-sm text-stone-400 dark:text-zinc-500 mb-6">{filtered.length} experiencias encontradas</p>
 
         {loading ? (
           <SkeletonGrid count={6} />
@@ -174,8 +174,8 @@ export default function EventsPage() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-5xl mb-4">🔍</div>
-            <h3 className="text-xl font-display text-stone-700 mb-2">No se encontraron experiencias</h3>
-            <p className="text-stone-500 mb-6">Intenta con otros filtros o una búsqueda diferente.</p>
+            <h3 className="text-xl font-display text-stone-700 dark:text-zinc-300 mb-2">No se encontraron experiencias</h3>
+            <p className="text-stone-500 dark:text-zinc-500 mb-6">Intenta con otros filtros o una búsqueda diferente.</p>
             <button onClick={() => { handleSearch(''); handleCategory(null); setSelectedDate(''); updateParams({ q: null, cat: null, fecha: null, page: null }); }}
               className="px-5 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors">
               Limpiar filtros

@@ -34,7 +34,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               <li><Link to="/eventos" className="text-sm hover:text-white transition-colors">Experiencias</Link></li>
               <li><Link to="/calendario" className="text-sm hover:text-white transition-colors">Calendario</Link></li>
-              <li><Link to="/destinos/chillan" className="text-sm hover:text-white transition-colors">Destinos</Link></li>
+              <li><Link to="/destinos" className="text-sm hover:text-white transition-colors">Destinos</Link></li>
               <li><Link to="/nosotros" className="text-sm hover:text-white transition-colors">Nosotros</Link></li>
               <li><Link to="/contacto" className="text-sm hover:text-white transition-colors">Contacto</Link></li>
             </ul>
