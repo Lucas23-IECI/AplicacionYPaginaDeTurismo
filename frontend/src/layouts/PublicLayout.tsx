@@ -3,8 +3,6 @@ import Navbar from '../components/shared/Navbar';
 import Footer from '../components/shared/Footer';
 import ScrollProgress from '../components/ui/ScrollProgress';
 import PageTransition from '../components/ui/PageTransition';
-import LocationBanner from '../components/ui/LocationBanner';
-import CookieConsent from '../components/ui/CookieConsent';
 import { useEffect } from 'react';
 
 export default function PublicLayout() {
@@ -18,14 +16,12 @@ export default function PublicLayout() {
     <div className="bg-white text-stone-900 font-body min-h-screen">
       <ScrollProgress />
       <Navbar />
-      <LocationBanner />
       <main>
         <PageTransition>
           <Outlet />
         </PageTransition>
       </main>
       <Footer />
-      <CookieConsent />
     </div>
   );
 }

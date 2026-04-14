@@ -54,7 +54,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [requested, setRequested] = useState(false);
 
-  // Restore from localStorage on mount
+  // Restore from localStorage on mount, or auto-request (native browser prompt)
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -64,8 +64,11 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         setLng(sLng);
         setCity(sCity);
         setRequested(true);
+        return;
       }
     } catch { /* ignore */ }
+    // Auto-request triggers the native browser geolocation dialog
+    requestLocation();
   }, []);
 
   const requestLocation = useCallback(() => {
